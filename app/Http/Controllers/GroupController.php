@@ -61,7 +61,7 @@ class GroupController extends Controller
         $group = GroupUsers::find($group_id)
             ->join('users','users.id','=','group_users.user_id')
             ->select('group_users.*','users.name')
-        ->get();
+        ->paginate(10);
 
         return response()->json($group);
     }
@@ -74,7 +74,7 @@ class GroupController extends Controller
 
         $search = User::where('name', 'like', '%'.$data['search'].'%')
             ->select('name')
-            ->get();
+            ->paginate(10);
 
         return response()->json($search);
     }
@@ -83,7 +83,9 @@ class GroupController extends Controller
     {
         $group = GroupUsers::where('user_id',$user_id)
             ->join('groups','groups.id','=','group_users.group_id')
-            ->select('groups.name')->paginate(5);
+            ->select('groups.name')
+            ->paginate(5);
+
         $oneToOne = OneToOne::where('from_user_id',$user_id)
             ->join('users','users.id','=','one_to_ones.to_user_id')
             ->select('one_to_ones.to_user_id','users.name')
