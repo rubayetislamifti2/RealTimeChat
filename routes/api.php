@@ -15,3 +15,7 @@ Route::get('group/members/{group_id}',[GroupController::class, 'groupMembers']);
 Route::get('search/users', [GroupController::class, 'searchUsers']);
 Route::get('my/chats/{user_id}', [GroupController::class, 'myChatsList']);
 Route::get('group/chats/{group_id}', [GroupController::class, 'groupChats']);
+
+Route::post('create/chat/room', [OneToOneController::class, 'createChatRoom']);
+
+Route::get('all/chats/{chat_id}', [OneToOneController::class, 'allChats']);

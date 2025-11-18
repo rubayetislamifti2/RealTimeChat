@@ -17,11 +17,13 @@ class OnetoOneMsg implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public $userID;
+    public $chat_room;
+    public $userId;
     public $message;
-    public function __construct($userID, $message)
+    public function __construct($chat_room, $userId, $message)
     {
-        $this->userID = $userID;
+        $this->chat_room = $chat_room;
+        $this->userId = $userId;
         $this->message = $message;
     }
 
@@ -34,7 +36,7 @@ class OnetoOneMsg implements ShouldBroadcast
     {
         return [
 //            new PrivateChannel("privateChat.{$this->userID}"),
-            new Channel("publicChat.{$this->userID}")
+            new Channel("publicChat.{$this->chat_room}")
         ];
     }
 
@@ -46,7 +48,8 @@ class OnetoOneMsg implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'userID' => $this->userID,
+            'chat_room' => $this->chat_room,
+            'from' => $this->userId,
             'msg' => $this->message
         ];
     }

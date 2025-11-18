@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\GroupMsgEvent;
+use App\Models\ChatRoom;
 use App\Models\Group;
 use App\Models\GroupMsg;
 use App\Models\GroupUsers;
@@ -106,15 +107,30 @@ class GroupController extends Controller
             $group = GroupUsers::where('group_users.user_id', $user_id)
                 ->join('groups', 'groups.id', '=', 'group_users.group_id')
                 ->select('groups.name')
-                ->paginate(5);
-//            ->get();
+//                ->paginate(5);
+            ->get();
 
-            $oneToOne = OneToOne::where('one_to_ones.from_user_id', $user_id)
-                ->join('users', 'users.id', '=', 'one_to_ones.to_user_id')
-                ->select('one_to_ones.to_user_id', 'users.name')
-                ->distinct()
-                ->paginate(5);
+//            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
+//                ->join('one_to_ones', 'one_to_ones.from_user_id', '=', 'users.id')
+//                ->select('one_to_ones.to_user_id', 'users.name')
+//                ->distinct()
+//                ->paginate(5);
 //            ->get();
+            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
+                ->join('users', 'users.id', '=', 'chat_rooms.to_user_id')
+                ->select('chat_rooms.from_user_id', 'users.name')
+            ->get();
+//            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
+//                ->join('one_to_ones', 'one_to_ones.chat_room_id', '=', 'chat_rooms.id')
+//                ->join('users', function($join) use ($user_id) {
+//                    $join->on('users.id', '=', 'chat_rooms.from_user_id')
+//                        ->where('chat_rooms.from_user_id', '!=', $user_id);
+//                    $join->orOn('users.id', '=', 'chat_rooms.to_user_id')
+//                        ->where('chat_rooms.to_user_id', '!=', $user_id);
+//                })
+//                ->select('one_to_ones.*', 'users.name as other_user_name', 'chat_rooms.*')
+////                ->distinct()
+//                ->paginate(5);
 
             return response()->json(['data' => [$group, $oneToOne]]);
         }catch (\Exception $exception){

@@ -4,11 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OneToOne extends Model
+class ChatRoom extends Model
 {
     protected $fillable = [
-        'from_user_id',
-        'chat_room_id',
-        'message',
+        'from_user_id', 'to_user_id'
     ];
 }
