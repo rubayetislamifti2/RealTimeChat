@@ -71,9 +71,9 @@ class GroupController extends Controller
     public function groupMembers($group_id)
     {
         try {
-            $group = GroupUsers::find($group_id)
+            $group = GroupUsers::where('group_users.group_id', $group_id)
                 ->join('users', 'users.id', '=', 'group_users.user_id')
-                ->select('group_users.*', 'users.name')
+                ->select('group_users.user_id', 'users.name')
                 ->paginate(10);
 
             return response()->json($group);
@@ -86,13 +86,12 @@ class GroupController extends Controller
     public function searchUsers(Request $request)
     {
         try {
-
             $data = $request->validate([
                 'search' => 'required'
             ]);
 
             $search = User::where('name', 'like', '%' . $data['search'] . '%')
-                ->select('name')
+                ->select('id','name')
                 ->paginate(10);
 
             return response()->json($search);
@@ -104,16 +103,18 @@ class GroupController extends Controller
     public function myChatsList($user_id)
     {
         try {
-            $group = GroupUsers::where('user_id', $user_id)
+            $group = GroupUsers::where('group_users.user_id', $user_id)
                 ->join('groups', 'groups.id', '=', 'group_users.group_id')
                 ->select('groups.name')
                 ->paginate(5);
+//            ->get();
 
-            $oneToOne = OneToOne::where('from_user_id', $user_id)
+            $oneToOne = OneToOne::where('one_to_ones.from_user_id', $user_id)
                 ->join('users', 'users.id', '=', 'one_to_ones.to_user_id')
                 ->select('one_to_ones.to_user_id', 'users.name')
                 ->distinct()
                 ->paginate(5);
+//            ->get();
 
             return response()->json(['data' => [$group, $oneToOne]]);
         }catch (\Exception $exception){
@@ -125,7 +126,9 @@ class GroupController extends Controller
     {
         try {
             $group = GroupMsg::where('group_id', $group_id)
-                ->select('user_id', 'message')
+                ->join('users', 'users.id', '=', 'group_msgs.user_id')
+                ->select('group_msgs.user_id', 'users.name', 'group_msgs.message', 'group_msgs.created_at')
+                ->orderBy('group_msgs.id', 'desc')
                 ->paginate(10);
 
             return response()->json($group);

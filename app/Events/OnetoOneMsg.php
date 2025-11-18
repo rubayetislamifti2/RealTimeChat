@@ -40,7 +40,7 @@ class OnetoOneMsg implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        return 'private.message'; // Event name clients will receive
+        return 'private.message';
     }
 
     public function broadcastWith(): array
