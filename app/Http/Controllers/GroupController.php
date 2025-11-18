@@ -31,7 +31,7 @@ class GroupController extends Controller
         return response()->json([
            'group name'=> $response,
             'members'=>$groupUser
-        ]);
+        ],201);
     }
 
     public function addUserToGroup(Request $request)
