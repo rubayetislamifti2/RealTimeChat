@@ -43,7 +43,12 @@ class GroupController extends Controller
                 'added_by' => 'required|exists:users,id'
             ]);
 
-            $response = GroupUsers::create($data);
+            if ($data['user_id'] == $data['added_by']) {
+                return response()->json([
+                    'error' => "You can't add yourself"
+                ],422);
+            }
+            $response = GroupUsers::firstOrCreate($data);
 
             return response()->json($response);
         } catch (\Exception $exception){
@@ -107,30 +112,17 @@ class GroupController extends Controller
             $group = GroupUsers::where('group_users.user_id', $user_id)
                 ->join('groups', 'groups.id', '=', 'group_users.group_id')
                 ->select('groups.name')
-//                ->paginate(5);
-            ->get();
-
-//            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
-//                ->join('one_to_ones', 'one_to_ones.from_user_id', '=', 'users.id')
-//                ->select('one_to_ones.to_user_id', 'users.name')
-//                ->distinct()
-//                ->paginate(5);
+                ->latest()
+                ->paginate(5);
 //            ->get();
-            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
+
+            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)
+                ->orWhere('chat_rooms.to_user_id', $user_id)
                 ->join('users', 'users.id', '=', 'chat_rooms.to_user_id')
                 ->select('chat_rooms.from_user_id', 'users.name')
-            ->get();
-//            $oneToOne = ChatRoom::where('chat_rooms.from_user_id', $user_id)->orWhere('chat_rooms.to_user_id', $user_id)
-//                ->join('one_to_ones', 'one_to_ones.chat_room_id', '=', 'chat_rooms.id')
-//                ->join('users', function($join) use ($user_id) {
-//                    $join->on('users.id', '=', 'chat_rooms.from_user_id')
-//                        ->where('chat_rooms.from_user_id', '!=', $user_id);
-//                    $join->orOn('users.id', '=', 'chat_rooms.to_user_id')
-//                        ->where('chat_rooms.to_user_id', '!=', $user_id);
-//                })
-//                ->select('one_to_ones.*', 'users.name as other_user_name', 'chat_rooms.*')
-////                ->distinct()
-//                ->paginate(5);
+                ->latest()
+                ->paginate(5);
+//            ->get();
 
             return response()->json(['data' => [$group, $oneToOne]]);
         }catch (\Exception $exception){
@@ -144,7 +136,7 @@ class GroupController extends Controller
             $group = GroupMsg::where('group_id', $group_id)
                 ->join('users', 'users.id', '=', 'group_msgs.user_id')
                 ->select('group_msgs.user_id', 'users.name', 'group_msgs.message', 'group_msgs.created_at')
-                ->orderBy('group_msgs.id', 'desc')
+                ->latest()
                 ->paginate(10);
 
             return response()->json($group);

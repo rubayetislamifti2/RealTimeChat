@@ -19,7 +19,6 @@ class OneToOneController extends Controller
 
             $response = OneToOne::create($data);
 
-
             broadcast(new OnetoOneMsg($data['chat_room_id'], $data['from_user_id'], $data['message']));
 
             return response()->json($response, 201);
@@ -34,16 +33,12 @@ class OneToOneController extends Controller
             $data = $request->validate([
                 'from_user_id' => 'required|exists:users,id',
                 'to_user_id' => 'required|exists:users,id',
-
             ]);
 
             $response = ChatRoom::firstOrCreate([
                 'from_user_id' => min($data['from_user_id'], $data['to_user_id']),
                 'to_user_id' => max($data['from_user_id'], $data['to_user_id']),
             ]);
-
-
-//            broadcast(new OnetoOneMsg($data['to_user_id'], $data['message']));
 
             return response()->json($response, 201);
         }catch (\Exception $e){
@@ -57,7 +52,8 @@ class OneToOneController extends Controller
             ->join('users', 'users.id', '=', 'one_to_ones.from_user_id')
             ->select('one_to_ones.*', 'users.name')
             ->latest()
-            ->get();
+            ->paginate(10);
+//            ->get();
 
         return response()->json(['data' => $chatRoom]);
     }
