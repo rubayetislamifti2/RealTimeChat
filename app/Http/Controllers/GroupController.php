@@ -10,6 +10,7 @@ use App\Models\GroupUsers;
 use App\Models\OneToOne;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class GroupController extends Controller
 {
@@ -28,14 +29,7 @@ class GroupController extends Controller
             'user_id'=>$data['user_id']
         ]);
 
-        return response()->json([
-            'status'=>true,
-            'message'=>'Group Created Successfully',
-            'data' => [
-                'group name'=> $response,
-                'members'=>$groupUser
-                ]
-        ],201);
+       return $this->apiSuccess('Group Created',[$response, $groupUser],Response::HTTP_CREATED);
     }
 
     public function addUserToGroup(Request $request)
@@ -54,13 +48,9 @@ class GroupController extends Controller
             }
             $response = GroupUsers::firstOrCreate($data);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Added to group',
-                'data' => $response
-            ],202);
+           return $this->apiSuccess('Added to group',$response,Response::HTTP_CREATED);
         } catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -76,13 +66,15 @@ class GroupController extends Controller
 
             broadcast(new GroupMsgEvent($data['group_id'],$data['user_id'], $data['message']));
 
-            return response()->json([
-                'status'=>true,
-                'message' => 'success',
-                'data' => $response
-            ],201);
+//            return response()->json([
+//                'status'=>true,
+//                'message' => 'success',
+//                'data' => $response
+//            ],201);
+
+           return $this->apiSuccess('Message sent successfully',$response,Response::HTTP_CREATED);
         }catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,14 +86,10 @@ class GroupController extends Controller
                 ->select('group_users.user_id', 'users.name')
                 ->paginate(10);
 
-            return response()->json([
-                'status'=>true,
-                'message'=>'success',
-                'data' => $group
-            ],202);
+           return $this->apiSuccess('List of group members',$group,Response::HTTP_OK);
         }
         catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -116,13 +104,9 @@ class GroupController extends Controller
                 ->select('id','name')
                 ->paginate(10);
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Found Results',
-                'data' => $search
-            ],202);
+           return $this->apiSuccess('List of users',$search,Response::HTTP_OK);
         }catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -144,16 +128,9 @@ class GroupController extends Controller
                 ->paginate(5);
 //            ->get();
 
-            return response()->json([
-                'status' => true,
-                'message'=>'success',
-                'data' => [
-                    'group'=> $group,
-                    'one to one'=>$oneToOne
-                ]
-            ],202);
+           return $this->apiSuccess('List of users',['Group'=>$group,'One to One'=>$oneToOne],Response::HTTP_OK);
         }catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -166,14 +143,10 @@ class GroupController extends Controller
                 ->latest()
                 ->paginate(10);
 
-            return response()->json([
-                'status' => true,
-                'message'=>'success',
-                'data'=>$group
-            ],202);
+           return $this->apiSuccess('List of group messages',$group,Response::HTTP_OK);
         }
         catch (\Exception $exception){
-            return response()->json(['error' => $exception->getMessage()]);
+           return $this->apiError($exception->getMessage(),null,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
