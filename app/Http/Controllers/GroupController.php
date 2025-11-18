@@ -29,8 +29,12 @@ class GroupController extends Controller
         ]);
 
         return response()->json([
-           'group name'=> $response,
-            'members'=>$groupUser
+            'status'=>true,
+            'message'=>'Group Created Successfully',
+            'data' => [
+                'group name'=> $response,
+                'members'=>$groupUser
+                ]
         ],201);
     }
 
@@ -50,7 +54,11 @@ class GroupController extends Controller
             }
             $response = GroupUsers::firstOrCreate($data);
 
-            return response()->json($response);
+            return response()->json([
+                'success' => true,
+                'message' => 'Added to group',
+                'data' => $response
+            ],202);
         } catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
         }
@@ -68,7 +76,11 @@ class GroupController extends Controller
 
             broadcast(new GroupMsgEvent($data['group_id'],$data['user_id'], $data['message']));
 
-            return response()->json($response);
+            return response()->json([
+                'status'=>true,
+                'message' => 'success',
+                'data' => $response
+            ],201);
         }catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
         }
@@ -82,7 +94,11 @@ class GroupController extends Controller
                 ->select('group_users.user_id', 'users.name')
                 ->paginate(10);
 
-            return response()->json($group);
+            return response()->json([
+                'status'=>true,
+                'message'=>'success',
+                'data' => $group
+            ],202);
         }
         catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
@@ -100,7 +116,11 @@ class GroupController extends Controller
                 ->select('id','name')
                 ->paginate(10);
 
-            return response()->json($search);
+            return response()->json([
+                'status' => true,
+                'message' => 'Found Results',
+                'data' => $search
+            ],202);
         }catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
         }
@@ -112,7 +132,7 @@ class GroupController extends Controller
             $group = GroupUsers::where('group_users.user_id', $user_id)
                 ->join('groups', 'groups.id', '=', 'group_users.group_id')
                 ->select('groups.name')
-                ->latest()
+                ->orderBy('group_users.created_at', 'desc')
                 ->paginate(5);
 //            ->get();
 
@@ -120,11 +140,18 @@ class GroupController extends Controller
                 ->orWhere('chat_rooms.to_user_id', $user_id)
                 ->join('users', 'users.id', '=', 'chat_rooms.to_user_id')
                 ->select('chat_rooms.from_user_id', 'users.name')
-                ->latest()
+                ->orderBy('chat_rooms.created_at', 'desc')
                 ->paginate(5);
 //            ->get();
 
-            return response()->json(['data' => [$group, $oneToOne]]);
+            return response()->json([
+                'status' => true,
+                'message'=>'success',
+                'data' => [
+                    'group'=> $group,
+                    'one to one'=>$oneToOne
+                ]
+            ],202);
         }catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
         }
@@ -139,8 +166,13 @@ class GroupController extends Controller
                 ->latest()
                 ->paginate(10);
 
-            return response()->json($group);
-        }catch (\Exception $exception){
+            return response()->json([
+                'status' => true,
+                'message'=>'success',
+                'data'=>$group
+            ],202);
+        }
+        catch (\Exception $exception){
             return response()->json(['error' => $exception->getMessage()]);
         }
     }

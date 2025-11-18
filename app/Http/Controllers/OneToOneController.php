@@ -21,7 +21,11 @@ class OneToOneController extends Controller
 
             broadcast(new OnetoOneMsg($data['chat_room_id'], $data['from_user_id'], $data['message']));
 
-            return response()->json($response, 201);
+            return response()->json([
+                'success' => true,
+                'message'=>'success',
+                'data'=>$response
+            ], 201);
         }catch (\Exception $e){
             return response()->json($e, 400);
         }
@@ -40,7 +44,11 @@ class OneToOneController extends Controller
                 'to_user_id' => max($data['from_user_id'], $data['to_user_id']),
             ]);
 
-            return response()->json($response, 201);
+            return response()->json([
+                'status' => true,
+                'message'=>'success',
+                'data'=>$response
+            ], 201);
         }catch (\Exception $e){
             return response()->json($e, 400);
         }
@@ -55,6 +63,10 @@ class OneToOneController extends Controller
             ->paginate(10);
 //            ->get();
 
-        return response()->json(['data' => $chatRoom]);
+        return response()->json([
+            'status' => true,
+            'message'=>'success',
+            'data' => $chatRoom
+        ],202);
     }
 }
